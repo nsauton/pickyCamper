@@ -84,7 +84,28 @@ async def add_recipe(recipe: RecipeBase, db: db_dependecy):
         
 @app.get("/recipes/{recipeID}")
 async def get_recipe(recipeID: int, db: db_dependecy):
-    res = db.query(models.Recipes).filter(models.Recipes.id == recipeID).first()
-    if not res:
+    recipe = db.query(models.Recipes).filter(models.Recipes.id == recipeID).first()
+    if not recipe:
         raise HTTPException(status_code=404, detail='Recipe not found')
+    
+    ingredients = []
+    measurements = db.query(models.Measurements).filter(models.Measurements.recipeID == recipe.id).all()
+    for measurement in measurements:
+        ingredient = db.query(models.Ingredients).filter(models.Ingredients.id == measurement.ingredientID).first()
+        if ingredient:
+            ingredients.append({
+                "ingredientID": ingredient.id,
+                "name": ingredient.name,
+                "measurementID": measurement.id,
+                "quantity": measurement.quantity,
+                "unit": measurement.unit
+            })
+    return {"recipe": recipe, "ingredients": ingredients}
+
+@app.get("/recipes")
+async def get_all_recipes(db: db_dependecy):
+    res = db.query(models.Recipes).all()
+    if not res:
+        raise HTTPException(status_code=404, detail='No recipes found')
+    
     return res

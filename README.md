@@ -1,0 +1,1 @@
+This is a database full of camping recipes. The database is not populated yet, so far just routes from api to database.
